@@ -99,6 +99,17 @@ var _observer = require("./observer");
 
 console.log(_observer.Observer);
 console.log(123);
+'beforeCreate';
+initData();
+'created';
+$mount;
+parseTemplateToRenderFunction;
+beforeMount;
+updateComponentFunction;
+new Watcher(); //thi.get(); 
+
+update;
+mounted;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/mvvm/src/index.js","/mvvm/src")
 },{"./observer":3,"_process":7,"buffer":5,"timers":8}],3:[function(require,module,exports){
@@ -330,7 +341,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/base64-js/index.js","/node_modules/base64-js")
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/_buffer@5.2.1@buffer/node_modules/base64-js/index.js","/node_modules/_buffer@5.2.1@buffer/node_modules/base64-js")
 },{"_process":7,"buffer":5,"timers":8}],5:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,setImmediate,clearImmediate,__filename,__dirname){
 /*!
@@ -2111,7 +2122,7 @@ function numberIsNaN (obj) {
   return obj !== obj // eslint-disable-line no-self-compare
 }
 
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/buffer/index.js","/node_modules/buffer")
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/_buffer@5.2.1@buffer/index.js","/node_modules/_buffer@5.2.1@buffer")
 },{"_process":7,"base64-js":4,"buffer":5,"ieee754":6,"timers":8}],6:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,setImmediate,clearImmediate,__filename,__dirname){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
@@ -2199,7 +2210,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/ieee754/index.js","/node_modules/ieee754")
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/_buffer@5.2.1@buffer/node_modules/ieee754/index.js","/node_modules/_buffer@5.2.1@buffer/node_modules/ieee754")
 },{"_process":7,"buffer":5,"timers":8}],7:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,setImmediate,clearImmediate,__filename,__dirname){
 // shim for using process in browser
@@ -2387,7 +2398,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/process/browser.js","/node_modules/process")
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/_process@0.11.10@process/browser.js","/node_modules/_process@0.11.10@process")
 },{"_process":7,"buffer":5,"timers":8}],8:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,setImmediate,clearImmediate,__filename,__dirname){
 var nextTick = require('process/browser.js').nextTick;
@@ -2466,7 +2477,7 @@ exports.setImmediate = typeof setImmediate === "function" ? setImmediate : funct
 exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
   delete immediateIds[id];
 };
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/timers-browserify/main.js","/node_modules/timers-browserify")
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/_timers-browserify@1.4.2@timers-browserify/main.js","/node_modules/_timers-browserify@1.4.2@timers-browserify")
 },{"_process":7,"buffer":5,"process/browser.js":7,"timers":8}]},{},[2]);
 
 //# sourceMappingURL=mvvm.js.map
