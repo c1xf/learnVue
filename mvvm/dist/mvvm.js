@@ -91,28 +91,52 @@ function popTarget() {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/mvvm/src/dep.js","/mvvm/src")
-},{"_process":7,"buffer":5,"timers":8}],2:[function(require,module,exports){
+},{"_process":10,"buffer":8,"timers":11}],2:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,setImmediate,clearImmediate,__filename,__dirname){
 "use strict";
 
 var _observer = require("./observer");
 
-console.log(_observer.Observer);
-console.log(123);
-'beforeCreate';
-initData();
-'created';
-$mount;
-parseTemplateToRenderFunction;
-beforeMount;
-updateComponentFunction;
-new Watcher(); //thi.get(); 
+var _watcher = _interopRequireDefault(require("./watcher"));
 
-update;
-mounted;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+//@ts-check
+var noop = function noop() {};
+
+var vm = {
+  _watchers: [],
+  data: {
+    name: 'jack',
+    age: 12 // render:new Function("with(this){return _c('div',{attrs:{\"id\":\"app\"}},[_v(_s(name))])}")
+
+  }
+};
+new _observer.Observer(vm.data);
+new _watcher.default(vm, function () {
+  //update function 
+  var name = vm.data.name;
+  var age = vm.data.age;
+  console.log(name, age);
+}, noop);
+setTimeout(function () {
+  vm.data.name = 'lucy';
+  vm.data.age = 10;
+  vm.data.name = 'lili';
+}, 1000); // 'beforeCreate'
+// initData()
+// 'created'
+// $mount
+// compileTemplateToRenderFunction  render bind deps  ast render 
+// beforeMount
+// updateComponentFunction 
+// new Watcher() //thi.get(); 
+// update
+// mounted 
+// Class
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/mvvm/src/index.js","/mvvm/src")
-},{"./observer":3,"_process":7,"buffer":5,"timers":8}],3:[function(require,module,exports){
+},{"./observer":3,"./watcher":6,"_process":10,"buffer":8,"timers":11}],3:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,setImmediate,clearImmediate,__filename,__dirname){
 "use strict";
 
@@ -187,7 +211,360 @@ function defineReactive(obj, key, val) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/mvvm/src/observer.js","/mvvm/src")
-},{"./dep":1,"_process":7,"buffer":5,"timers":8}],4:[function(require,module,exports){
+},{"./dep":1,"_process":10,"buffer":8,"timers":11}],4:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,setImmediate,clearImmediate,__filename,__dirname){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.queueWatcher = queueWatcher;
+
+var _util = require("./util");
+
+/* @flow */
+// import config from '../config'
+// import { callHook } from '../instance/lifecycle'
+//@ts-check
+var queue = [];
+var has = {};
+var waiting = false;
+var flushing = false;
+var index = 0;
+/**
+ * Reset the scheduler's state.
+ */
+
+function resetSchedulerState() {
+  queue.length = 0;
+  has = {};
+  waiting = flushing = false;
+}
+/**
+ * Flush both queues and run the watchers.
+ */
+
+
+function flushSchedulerQueue() {
+  flushing = true;
+  var watcher, id, vm; // Sort queue before flush.
+  // This ensures that:
+  // 1. Components are updated from parent to child. (because parent is always
+  //    created before the child)
+  // 2. A component's user watchers are run before its render watcher (because
+  //    user watchers are created before the render watcher)
+  // 3. If a component is destroyed during a parent component's watcher run,
+  //    its watchers can be skipped.
+
+  queue.sort(function (a, b) {
+    return a.id - b.id;
+  }); // do not cache length because more watchers might be pushed
+  // as we run existing watchers
+
+  for (index = 0; index < queue.length; index++) {
+    watcher = queue[index];
+    id = watcher.id;
+    has[id] = null;
+    watcher.run();
+  } // reset scheduler before updated hook called
+
+
+  var oldQueue = queue.slice();
+  resetSchedulerState();
+}
+/**
+ * Push a watcher into the watcher queue.
+ * Jobs with duplicate IDs will be skipped unless it's
+ * pushed when the queue is being flushed.
+ */
+
+
+function queueWatcher(watcher) {
+  var id = watcher.id;
+
+  if (has[id] == null) {
+    has[id] = true;
+
+    if (!flushing) {
+      queue.push(watcher);
+    } else {
+      // if already flushing, splice the watcher based on its id
+      // if already past its id, it will be run next immediately.
+      var i = queue.length - 1;
+
+      while (i >= 0 && queue[i].id > watcher.id) {
+        i--;
+      }
+
+      queue.splice(Math.max(i, index) + 1, 0, watcher);
+    } // queue the flush
+
+
+    if (!waiting) {
+      waiting = true;
+      (0, _util.nextTick)(flushSchedulerQueue);
+    }
+  }
+}
+
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/mvvm/src/scheduler.js","/mvvm/src")
+},{"./util":5,"_process":10,"buffer":8,"timers":11}],5:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,setImmediate,clearImmediate,__filename,__dirname){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.nextTick = void 0;
+
+//@ts-check
+var nextTick = function () {
+  var callbacks = [];
+  var pending = false;
+  var timerFunc;
+
+  function nextTickHandler() {
+    pending = false;
+    var copies = callbacks.slice(0);
+    callbacks.length = 0;
+
+    for (var i = 0; i < copies.length; i++) {
+      copies[i]();
+    }
+  } // the nextTick behavior leverages the microtask queue, which can be accessed
+  // via either native Promise.then or MutationObserver.
+  // MutationObserver has wider support, however it is seriously bugged in
+  // UIWebView in iOS >= 9.3.3 when triggered in touch event handlers. It
+  // completely stops working after triggering a few times... so, if native
+  // Promise is available, we will use it:
+
+  /* istanbul ignore if */
+
+
+  if (typeof Promise !== 'undefined') {
+    var p = Promise.resolve();
+
+    var logError = function logError(err) {
+      console.error(err);
+    };
+
+    timerFunc = function timerFunc() {
+      p.then(nextTickHandler).catch(logError);
+    };
+  } else {
+    // fallback to setTimeout
+
+    /* istanbul ignore next */
+    timerFunc = function timerFunc() {
+      setTimeout(nextTickHandler, 0);
+    };
+  }
+
+  return function queueNextTick(cb, ctx) {
+    var _resolve;
+
+    callbacks.push(function () {
+      if (cb) cb.call(ctx);
+      if (_resolve) _resolve(ctx);
+    });
+
+    if (!pending) {
+      pending = true;
+      timerFunc();
+    }
+
+    if (!cb && typeof Promise !== 'undefined') {
+      return new Promise(function (resolve) {
+        _resolve = resolve;
+      });
+    }
+  };
+}();
+
+exports.nextTick = nextTick;
+
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/mvvm/src/util.js","/mvvm/src")
+},{"_process":10,"buffer":8,"timers":11}],6:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,setImmediate,clearImmediate,__filename,__dirname){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _scheduler = require("./scheduler");
+
+var _dep = require("./dep");
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var uid = 0;
+/**
+ * A watcher parses an expression, collects dependencies,
+ * and fires callback when the expression value changes.
+ * This is used for both the $watch() api and directives.
+ */
+
+var Watcher =
+/*#__PURE__*/
+function () {
+  function Watcher(vm, expOrFn, cb) {
+    _classCallCheck(this, Watcher);
+
+    _defineProperty(this, "vm", void 0);
+
+    _defineProperty(this, "expression", void 0);
+
+    _defineProperty(this, "cb", void 0);
+
+    _defineProperty(this, "id", void 0);
+
+    _defineProperty(this, "deps", void 0);
+
+    _defineProperty(this, "newDeps", void 0);
+
+    _defineProperty(this, "depIds", void 0);
+
+    _defineProperty(this, "newDepIds", void 0);
+
+    _defineProperty(this, "getter", void 0);
+
+    _defineProperty(this, "value", void 0);
+
+    this.vm = vm;
+
+    vm._watchers.push(this);
+
+    this.cb = cb;
+    this.id = ++uid; // uid for batching
+
+    this.active = true;
+    this.deps = [];
+    this.newDeps = [];
+    this.depIds = new Set();
+    this.newDepIds = new Set();
+    this.getter = expOrFn;
+    this.value = this.get();
+  }
+  /**
+   * Evaluate the getter, and re-collect dependencies.
+   */
+
+
+  _createClass(Watcher, [{
+    key: "get",
+    value: function get() {
+      (0, _dep.pushTarget)(this);
+      var value;
+      var vm = this.vm;
+      value = this.getter.call(vm, vm);
+      (0, _dep.popTarget)();
+      this.cleanupDeps();
+      return value;
+    }
+    /**
+     * Add a dependency to this directive.
+     */
+
+  }, {
+    key: "addDep",
+    value: function addDep(dep) {
+      var id = dep.id;
+
+      if (!this.newDepIds.has(id)) {
+        this.newDepIds.add(id);
+        this.newDeps.push(dep);
+
+        if (!this.depIds.has(id)) {
+          dep.addSub(this);
+        }
+      }
+    }
+    /**
+     * Clean up for dependency collection.
+     */
+
+  }, {
+    key: "cleanupDeps",
+    value: function cleanupDeps() {
+      var i = this.deps.length;
+
+      while (i--) {
+        var dep = this.deps[i];
+
+        if (!this.newDepIds.has(dep.id)) {
+          dep.removeSub(this);
+        }
+      }
+
+      var tmp = this.depIds;
+      this.depIds = this.newDepIds;
+      this.newDepIds = tmp;
+      this.newDepIds.clear();
+      tmp = this.deps;
+      this.deps = this.newDeps;
+      this.newDeps = tmp;
+      this.newDeps.length = 0;
+    }
+    /**
+     * Subscriber interface.
+     * Will be called when a dependency changes.
+     */
+
+  }, {
+    key: "update",
+    value: function update() {
+      /* istanbul ignore else */
+      (0, _scheduler.queueWatcher)(this);
+    }
+    /**
+     * Scheduler job interface.
+     * Will be called by the scheduler.
+     */
+
+  }, {
+    key: "run",
+    value: function run() {
+      if (this.active) {
+        var value = this.get();
+
+        if (value !== this.value) {
+          // set new value
+          var oldValue = this.value;
+          this.value = value;
+          this.cb.call(this.vm, value, oldValue);
+        }
+      }
+    }
+    /**
+     * Depend on all deps collected by this watcher.
+     */
+
+  }, {
+    key: "depend",
+    value: function depend() {
+      var i = this.deps.length;
+
+      while (i--) {
+        this.deps[i].depend();
+      }
+    }
+  }]);
+
+  return Watcher;
+}();
+
+exports.default = Watcher;
+
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/mvvm/src/watcher.js","/mvvm/src")
+},{"./dep":1,"./scheduler":4,"_process":10,"buffer":8,"timers":11}],7:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,setImmediate,clearImmediate,__filename,__dirname){
 'use strict'
 
@@ -341,8 +718,8 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/_buffer@5.2.1@buffer/node_modules/base64-js/index.js","/node_modules/_buffer@5.2.1@buffer/node_modules/base64-js")
-},{"_process":7,"buffer":5,"timers":8}],5:[function(require,module,exports){
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/base64-js/index.js","/node_modules/base64-js")
+},{"_process":10,"buffer":8,"timers":11}],8:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,setImmediate,clearImmediate,__filename,__dirname){
 /*!
  * The buffer module from node.js, for the browser.
@@ -2122,8 +2499,8 @@ function numberIsNaN (obj) {
   return obj !== obj // eslint-disable-line no-self-compare
 }
 
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/_buffer@5.2.1@buffer/index.js","/node_modules/_buffer@5.2.1@buffer")
-},{"_process":7,"base64-js":4,"buffer":5,"ieee754":6,"timers":8}],6:[function(require,module,exports){
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/buffer/index.js","/node_modules/buffer")
+},{"_process":10,"base64-js":7,"buffer":8,"ieee754":9,"timers":11}],9:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,setImmediate,clearImmediate,__filename,__dirname){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
@@ -2210,8 +2587,8 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/_buffer@5.2.1@buffer/node_modules/ieee754/index.js","/node_modules/_buffer@5.2.1@buffer/node_modules/ieee754")
-},{"_process":7,"buffer":5,"timers":8}],7:[function(require,module,exports){
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/ieee754/index.js","/node_modules/ieee754")
+},{"_process":10,"buffer":8,"timers":11}],10:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,setImmediate,clearImmediate,__filename,__dirname){
 // shim for using process in browser
 var process = module.exports = {};
@@ -2398,8 +2775,8 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/_process@0.11.10@process/browser.js","/node_modules/_process@0.11.10@process")
-},{"_process":7,"buffer":5,"timers":8}],8:[function(require,module,exports){
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/process/browser.js","/node_modules/process")
+},{"_process":10,"buffer":8,"timers":11}],11:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,setImmediate,clearImmediate,__filename,__dirname){
 var nextTick = require('process/browser.js').nextTick;
 var apply = Function.prototype.apply;
@@ -2477,7 +2854,7 @@ exports.setImmediate = typeof setImmediate === "function" ? setImmediate : funct
 exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
   delete immediateIds[id];
 };
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/_timers-browserify@1.4.2@timers-browserify/main.js","/node_modules/_timers-browserify@1.4.2@timers-browserify")
-},{"_process":7,"buffer":5,"process/browser.js":7,"timers":8}]},{},[2]);
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],require("timers").setImmediate,require("timers").clearImmediate,"/node_modules/timers-browserify/main.js","/node_modules/timers-browserify")
+},{"_process":10,"buffer":8,"process/browser.js":10,"timers":11}]},{},[2]);
 
 //# sourceMappingURL=mvvm.js.map

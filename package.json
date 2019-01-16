@@ -4,7 +4,8 @@
   "description": "只保留vue核心流程，以便学习。",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:mvvm":".\\node_modules\\.bin\\gulp mvvm"
   },
   "repository": {
     "type": "git",
